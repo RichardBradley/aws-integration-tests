@@ -276,10 +276,17 @@ describe("cloudwatch alarms", async () => {
                 // See https://docs.aws.amazon.com/sns/latest/dg/sns-monitoring-using-cloudwatch.html
                 switch (a.MetricName) {
                     case "NumberOfNotificationsFailed":
+                        // The docs here do say "Valid statistics: Sum, Average"
+                        // but based on the rest of the description, I don't think Average
+                        // would work:
+                        //   "For SMS ... the metric increments by 1 when Amazon SNS stops attempting message deliveries."
+                        a.Statistic!.should.equal("Sum")
                         a.Dimensions?.map(d => d.Name).should.deepEqual(["PhoneNumber"])
                         break;
                     case "SMSMonthToDateSpentUSD":
-                        a.TreatMissingData!.should.equal("breaching")
+                        // ok
+                        // docs: "Valid statistics: Sum"
+                        a.Statistic!.should.equal("Sum")
                         break;
                     default:
                         throw new Error("Unhandled or incorrect MetricName: " + a.MetricName);
